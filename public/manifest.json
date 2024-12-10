@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Close tabs for me",
+  "version": "1.0",
+  "description": "Closes tabs for you",
+  "permissions": ["tabs", "bookmarks", "alarms", "storage"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "index.html"
+  }
+}
