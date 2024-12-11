@@ -3,9 +3,10 @@ import { useState } from "react";
 
 function App() {
   const [time, setTime] = useState(1);
-  const [timeMult, setTimeMult] = useState(60);
+  const [timeMult, setTimeMult] = useState(60 * 60);
   const [shouldSave, setShouldSave] = useState(false);
   const [folderName, setFolderName] = useState("закрытые вкладки");
+  const [folderId, setFolderId] = useState(undefined);
   const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
@@ -15,6 +16,7 @@ function App() {
         setTimeMult(result.settings.timeMult);
         setShouldSave(result.settings.shouldSave);
         setFolderName(result.settings.folderName);
+        setFolderId(result.settings.folderId);
         setIsRunning(true);
       }
     });
@@ -26,7 +28,7 @@ function App() {
       (response) => {
         if (response.status === "running") {
           chrome.storage.sync.set({
-            settings: { time, timeMult, shouldSave, folderName },
+            settings: { time, timeMult, shouldSave, folderName, folderId },
           });
           setIsRunning(true);
         }
@@ -44,22 +46,22 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col w-96 p-4">
-      <h1 className="font-medium">Закрой за меня вкладки</h1>
-      <p className="mb-1 text-sm">расширение, которое закроет лишние вкладки</p>
+    <div className="flex flex-col w-[420px] p-4 ">
+      <h1 className="font-medium text-gray-900">Закрой за меня вкладки</h1>
+      <p className="mb-1 text-sm text-gray-400">
+        расширение, которое закроет лишние вкладки
+      </p>
       <p className="mb-2 pb-2 border-b">
         статус:{" "}
         {isRunning ? (
-          <span className="text-emerald-600">работает</span>
+          <span className="text-sky-500 font-medium">работает</span>
         ) : (
-          <span className="text-orange-500">
-            не запущено, необходимо задать настройки
-          </span>
+          <span className="text-orange-500 font-medium">не запущено</span>
         )}
       </p>
 
-      {isRunning && <h2 className="font-medium">Выбранные настройки: </h2>}
-      <div className="flex flex-col gap-2 p-2">
+      <div className="flex flex-col gap-3">
+        <h2 className="font-medium">Настройки: </h2>
         <label>
           <span className="mr-2">Закрывать вкладки через:</span>
           <input
@@ -83,31 +85,39 @@ function App() {
           <span>после последнего захода на вкладку</span>
         </label>
 
-        <label>
-          <input
-            type="checkbox"
-            className="mr-1"
-            value={shouldSave}
-            onChange={(e) => setShouldSave(e.target.checked)}
-            disabled={isRunning}
-          />
-          Сохранять закрытые вкладки в папку
-        </label>
-        <label className={`${shouldSave ? "block" : "hidden"} `}>
-          название папки{" "}
-          <input
-            className="border px-2"
-            value={folderName}
-            onChange={(e) => setFolderName(e.target.value)}
-            disabled={isRunning}
-          />
-        </label>
+        <div>
+          <label>
+            <input
+              type="checkbox"
+              className="mr-1"
+              checked={shouldSave}
+              onChange={(e) => setShouldSave(e.target.checked)}
+              disabled={isRunning}
+            />
+            Сохранять закрытые вкладки в папку
+          </label>
+          <label className={`${shouldSave ? "block" : "hidden"} `}>
+            название папки{" "}
+            <input
+              className="border px-2"
+              value={folderName}
+              onChange={(e) => setFolderName(e.target.value)}
+              disabled={isRunning}
+            />
+          </label>
+        </div>
         {isRunning ? (
-          <button onClick={onStopClick} className="border p-1 uppercase">
+          <button
+            onClick={onStopClick}
+            className="border p-2 mt-4 uppercase bg-orange-500 hover:bg-orange-700 duration-200 text-white font-medium"
+          >
             остановить
           </button>
         ) : (
-          <button onClick={onRunClick} className="border p-2 uppercase">
+          <button
+            onClick={onRunClick}
+            className="border p-2 mt-4 uppercase bg-sky-500 hover:bg-sky-700 duration-200 text-white font-medium"
+          >
             Запустить
           </button>
         )}
