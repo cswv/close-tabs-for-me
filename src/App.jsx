@@ -2,8 +2,11 @@ import { useEffect } from "react";
 import { useState } from "react";
 
 function App() {
+  const [useTime, setUseTime] = useState(false);
   const [time, setTime] = useState(1);
   const [timeMult, setTimeMult] = useState(60 * 60);
+  const [useMaxTabs, setUseMaxTabs] = useState(false);
+  const [maxTabs, setMaxTabs] = useState(1);
   const [shouldSave, setShouldSave] = useState(false);
   const [folderName, setFolderName] = useState("закрытые вкладки");
   const [folderId, setFolderId] = useState(undefined);
@@ -17,18 +20,34 @@ function App() {
         setShouldSave(result.settings.shouldSave);
         setFolderName(result.settings.folderName);
         setFolderId(result.settings.folderId);
+        setUseMaxTabs(result.settings.useMaxTabs);
+        setUseTime(result.settings.useTime);
+        setMaxTabs(result.settings.maxTabs);
         setIsRunning(true);
       }
     });
   }, []);
 
   const onRunClick = () => {
+    const settings = {
+      time,
+      timeMult,
+      shouldSave,
+      folderName,
+      folderId,
+      useTime,
+      useMaxTabs,
+      maxTabs,
+    };
     chrome.runtime.sendMessage(
-      { action: "run", payload: { time, timeMult, shouldSave, folderName } },
+      {
+        action: "run",
+        payload: settings,
+      },
       (response) => {
         if (response.status === "running") {
           chrome.storage.sync.set({
-            settings: { time, timeMult, shouldSave, folderName, folderId },
+            settings,
           });
           setIsRunning(true);
         }
@@ -62,8 +81,20 @@ function App() {
 
       <div className="flex flex-col gap-3">
         <h2 className="font-medium">Настройки: </h2>
-        <label>
-          <span className="mr-2">Закрывать вкладки через:</span>
+
+        <div>
+          <label>
+            <input
+              type="checkbox"
+              className="mr-1"
+              checked={useTime}
+              onChange={(e) => setUseTime(e.target.checked)}
+              disabled={isRunning}
+            />
+            <span className="mr-2">
+              Закрывать вкладки, которые не были активны более{" "}
+            </span>
+          </label>
           <input
             type="number"
             min="1"
@@ -75,15 +106,38 @@ function App() {
           <select
             className="border px-2 mr-2 "
             value={timeMult}
-            onChange={(e) => setTimeMult(e.target.value)}
+            onChange={(e) => setTimeMult(parseInt(e.target.value))}
             disabled={isRunning}
           >
             <option value={60}>минут</option>
             <option value={60 * 60}>часов</option>
             <option value={60 * 60 * 24}>дней</option>
           </select>
-          <span>после последнего захода на вкладку</span>
-        </label>
+        </div>
+
+        <div>
+          <label className="mr-2">
+            <input
+              type="checkbox"
+              className="mr-1"
+              checked={useMaxTabs}
+              onChange={(e) => setUseMaxTabs(e.target.checked)}
+              disabled={isRunning}
+            />
+            Закрывать самые старые вкладки, если всего открыто более
+          </label>
+          <label>
+            <input
+              type="number"
+              min="1"
+              className="border px-2 mr-2 w-16"
+              value={maxTabs}
+              onChange={(e) => setMaxTabs(parseInt(e.target.value))}
+              disabled={isRunning}
+            />
+            вкладок
+          </label>
+        </div>
 
         <div>
           <label>
@@ -94,10 +148,10 @@ function App() {
               onChange={(e) => setShouldSave(e.target.checked)}
               disabled={isRunning}
             />
-            Сохранять закрытые вкладки в папку
+            Сохранять закрытые вкладки
           </label>
           <label className={`${shouldSave ? "block" : "hidden"} `}>
-            название папки{" "}
+            в папку с названием{" "}
             <input
               className="border px-2"
               value={folderName}

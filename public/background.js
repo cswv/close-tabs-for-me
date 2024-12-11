@@ -2,7 +2,7 @@ const ALARM_NAME = "checkAllTabs";
 
 chrome.runtime.onStartup.addListener(() => {
   chrome.storage.sync.get(["settings"], (result) => {
-    if (result.settings !== undefined) {
+    if (result && result.settings !== undefined) {
       run(result.settings);
     }
   });
@@ -19,7 +19,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true;
 });
 
-async function run({ time, timeMult, shouldSave, folderName, folderId }) {
+async function run({
+  time,
+  timeMult,
+  shouldSave,
+  folderName,
+  folderId,
+  useTime,
+  useMaxTabs,
+  maxTabs,
+}) {
   chrome.alarms.create(ALARM_NAME, {
     delayInMinutes: 0,
     periodInMinutes: 1,
@@ -38,7 +47,13 @@ async function run({ time, timeMult, shouldSave, folderName, folderId }) {
 
   const handleAlarm = (alarm) => {
     if (alarm.name === ALARM_NAME) {
-      checkAllTabs(time * 1000 * timeMult, folderId);
+      checkAllTabs({
+        time: time * 1000 * timeMult,
+        folderId,
+        useTime,
+        useMaxTabs,
+        maxTabs,
+      });
     }
   };
 
@@ -50,28 +65,45 @@ function stop() {
   chrome.alarms.clear(ALARM_NAME);
 }
 
-function checkAllTabs(period, folderId) {
-  chrome.tabs.query({}, (tabs) => {
-    tabs.forEach(async (tab) => {
-      if (Date.now() - tab.lastAccessed >= period) {
-        if (folderId) {
-          const exist = await checkFolderExists(folderId);
-          if (exist) {
-            chrome.bookmarks.create({
-              parentId: folderId,
-              title: tab.title,
-              url: tab.url,
-            });
-          }
-        }
-        chrome.tabs.remove(tab.id);
+function checkAllTabs({ time, folderId, useTime, useMaxTabs, maxTabs }) {
+  chrome.tabs.query({}, async (tabs) => {
+    const sorted = tabs.sort((a, b) => a.lastAccessed - b.lastAccessed);
+    if (useMaxTabs && tabs.length > maxTabs) {
+      for (let i = 0; i <= tabs.length - maxTabs; i++) {
+        await saveToFolder(folderId, sorted[i].title, sorted[i].url);
+        chrome.tabs.remove(sorted[i].id);
+        sorted.shift();
       }
-    });
+    }
+    if (useTime) {
+      for (const tab of sorted) {
+        if (Date.now() - tab.lastAccessed >= time) {
+          await saveToFolder(folderId, tab.title, tab.url);
+          chrome.tabs.remove(tab.id);
+          sorted.shift();
+        } else {
+          break;
+        }
+      }
+    }
   });
 }
 
+async function saveToFolder(folderId, title, url) {
+  if (folderId) {
+    const exist = await checkFolderExists(folderId);
+    if (exist) {
+      chrome.bookmarks.create({
+        parentId: folderId,
+        title: title,
+        url: url,
+      });
+    }
+  }
+}
+
 function createFolder(parentId, title) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     chrome.bookmarks.create({ parentId, title }, (newFolder) => {
       chrome.storage.sync.get(["settings"], (result) => {
         chrome.storage.sync.set({
