@@ -15,3 +15,18 @@
     @apply text-base;
   }
 }
+
+.arrow-down {
+  @apply relative inline-block;
+}
+
+.arrow-down::after {
+  content: "";
+  @apply absolute w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-black;
+  top: 50%;
+  margin-left: 10px;
+}
+
+.arrow-down_rotated::after {
+  transform: rotate(180deg);
+}
