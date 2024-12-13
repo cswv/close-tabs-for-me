@@ -1,34 +1,10 @@
-import { useEffect } from "react";
-import { useState } from "react";
+import useGetTabs from "./useGetTabs";
 
 export default function TabList() {
-  const [tabs, setTabs] = useState([]);
-
-  useEffect(() => {
-    const handleTabsChange = async () => {
-      const tabs = await chrome.tabs.query({});
-      const sorted = tabs.sort((a, b) => a.lastAccessed - b.lastAccessed);
-      setTabs(sorted);
-    };
-
-    handleTabsChange();
-
-    chrome.tabs.onCreated.addListener(handleTabsChange);
-    chrome.tabs.onRemoved.addListener(handleTabsChange);
-    chrome.tabs.onUpdated.addListener(handleTabsChange);
-    chrome.tabs.onActivated.addListener(handleTabsChange);
-
-    return () => {
-      chrome.tabs.onCreated.removeListener(handleTabsChange);
-      chrome.tabs.onRemoved.removeListener(handleTabsChange);
-      chrome.tabs.onUpdated.removeListener(handleTabsChange);
-      chrome.tabs.onActivated.removeListener(handleTabsChange);
-    };
-  }, []);
+  const tabs = useGetTabs();
 
   const closeTab = (index) => {
     chrome.tabs.remove(tabs[index].id);
-    setTabs((prev) => [...prev.slice(0, index), ...prev.slice(index + 1)]);
   };
 
   return (

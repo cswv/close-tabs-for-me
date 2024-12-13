@@ -2,11 +2,13 @@ import { useEffect } from "react";
 import { useState } from "react";
 import Settings from "./components/Settings";
 import TabList from "./components/TabList";
+import Statistics from "./components/Statistics";
 
 function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isListOpen, setIsListOpen] = useState(false);
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
 
   useEffect(() => {
     chrome.storage.sync.get(["settings"], (result) => {
@@ -52,6 +54,16 @@ function App() {
         Вкладки по дате активности
       </button>
       {isListOpen && <TabList />}
+
+      <button
+        className={`font-medium mb-2 arrow-down p-2 bg-slate-200 hover:bg-slate-400 duration-200 text-start ${
+          isStatsOpen ? "arrow-down_rotated" : ""
+        }`}
+        onClick={() => setIsStatsOpen(!isStatsOpen)}
+      >
+        Статистика
+      </button>
+      {isStatsOpen && <Statistics />}
     </div>
   );
 }
