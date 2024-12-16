@@ -3,12 +3,14 @@ import { useState } from "react";
 import Settings from "./components/Settings";
 import TabList from "./components/TabList";
 import Statistics from "./components/Statistics";
+import { useTranslation } from "react-i18next";
 
 function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isListOpen, setIsListOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     chrome.storage.sync.get(["settings"], (result) => {
@@ -18,18 +20,30 @@ function App() {
     });
   }, []);
 
+  const changeLanguage = () => {
+    i18n.changeLanguage(i18n.language.includes("ru") ? "en" : "ru");
+  };
+
   return (
     <div className="flex flex-col w-[420px] p-4 ">
-      <h1 className="font-medium text-gray-900">Закрой за меня вкладки</h1>
-      <p className="mb-1 text-sm text-gray-400">
-        расширение, которое закроет лишние вкладки
-      </p>
+      <div className="flex justify-between">
+        <h1 className="font-medium text-gray-900">{t("app.extensionName")}</h1>
+        <button
+          className="underline hover:bg-slate-300 px-2 duration-200"
+          onClick={changeLanguage}
+        >
+          {i18n.language.includes("ru") ? "en" : "ру"}
+        </button>
+      </div>
+      <p className="mb-1 text-sm text-gray-400">{t("app.extensionSubtitle")}</p>
       <p className="mb-2 pb-2 border-b">
-        статус:{" "}
+        {t("app.status")}:{" "}
         {isRunning ? (
-          <span className="text-sky-500 font-medium">работает</span>
+          <span className="text-sky-500 font-medium">{t("app.working")}</span>
         ) : (
-          <span className="text-orange-500 font-medium">не запущено</span>
+          <span className="text-orange-500 font-medium">
+            {t("app.notStarted")}
+          </span>
         )}
       </p>
 
@@ -39,7 +53,7 @@ function App() {
         }`}
         onClick={() => setIsSettingsOpen(!isSettingsOpen)}
       >
-        Настройки
+        {t("app.settings")}
       </button>
       {isSettingsOpen && (
         <Settings isRunning={isRunning} setIsRunning={setIsRunning} />
@@ -51,7 +65,7 @@ function App() {
         }`}
         onClick={() => setIsListOpen(!isListOpen)}
       >
-        Вкладки по дате активности
+        {t("app.byActivityDate")}
       </button>
       {isListOpen && <TabList />}
 
@@ -61,7 +75,7 @@ function App() {
         }`}
         onClick={() => setIsStatsOpen(!isStatsOpen)}
       >
-        Статистика
+        {t("app.statistics")}
       </button>
       {isStatsOpen && <Statistics />}
     </div>

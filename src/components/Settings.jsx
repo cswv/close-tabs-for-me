@@ -1,14 +1,16 @@
 import { useEffect } from "react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function Settings({ isRunning, setIsRunning }) {
+  const { t, i18n } = useTranslation();
   const [useTime, setUseTime] = useState(false);
   const [time, setTime] = useState(1);
   const [timeMult, setTimeMult] = useState(60 * 60);
   const [useMaxTabs, setUseMaxTabs] = useState(false);
   const [maxTabs, setMaxTabs] = useState(1);
   const [shouldSave, setShouldSave] = useState(false);
-  const [folderName, setFolderName] = useState("закрытые вкладки");
+  const [folderName, setFolderName] = useState(t("statistics.closedTabs"));
   const [folderId, setFolderId] = useState(undefined);
 
   useEffect(() => {
@@ -74,7 +76,7 @@ export default function Settings({ isRunning, setIsRunning }) {
             onChange={(e) => setUseMaxTabs(e.target.checked)}
             disabled={isRunning}
           />
-          Закрывать самые старые вкладки, если всего открыто более
+          {t("settings.closeWhenMany")}
         </label>
         <label>
           <input
@@ -85,7 +87,7 @@ export default function Settings({ isRunning, setIsRunning }) {
             onChange={(e) => setMaxTabs(parseInt(e.target.value))}
             disabled={isRunning}
           />
-          вкладок
+          {t("settings.tabs")}
         </label>
       </div>
 
@@ -98,9 +100,7 @@ export default function Settings({ isRunning, setIsRunning }) {
             onChange={(e) => setUseTime(e.target.checked)}
             disabled={isRunning}
           />
-          <span className="mr-2">
-            Закрывать вкладки, которые не были активны более{" "}
-          </span>
+          <span className="mr-2">{t("settings.closeWhenTime")} </span>
         </label>
         <input
           type="number"
@@ -116,9 +116,9 @@ export default function Settings({ isRunning, setIsRunning }) {
           onChange={(e) => setTimeMult(parseInt(e.target.value))}
           disabled={isRunning}
         >
-          <option value={60}>минут</option>
-          <option value={60 * 60}>часов</option>
-          <option value={60 * 60 * 24}>дней</option>
+          <option value={60}>{t("settings.minutes")}</option>
+          <option value={60 * 60}>{t("settings.hours")}</option>
+          <option value={60 * 60 * 24}>{t("settings.days")}</option>
         </select>
       </div>
 
@@ -131,10 +131,10 @@ export default function Settings({ isRunning, setIsRunning }) {
             onChange={(e) => setShouldSave(e.target.checked)}
             disabled={isRunning}
           />
-          Сохранять закрытые вкладки
+          {t("settings.saveClosed")}
         </label>
         <label className={`${shouldSave ? "block" : "hidden"} `}>
-          в папку с названием{" "}
+          {t("settings.inFolder")}{" "}
           <input
             className="border px-2"
             value={folderName}
@@ -148,14 +148,14 @@ export default function Settings({ isRunning, setIsRunning }) {
           onClick={onStopClick}
           className="border p-2 mt-4 uppercase bg-orange-500 hover:bg-orange-700 duration-200 text-white font-medium"
         >
-          остановить
+          {t("settings.stop")}
         </button>
       ) : (
         <button
           onClick={onRunClick}
           className="border p-2 uppercase bg-sky-500 hover:bg-sky-700 duration-200 text-white font-medium"
         >
-          Запустить
+          {t("settings.run")}
         </button>
       )}
     </div>

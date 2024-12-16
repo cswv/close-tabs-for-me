@@ -1,0 +1,37 @@
+{
+  "app": {
+    "extensionName": "Сlose tabs for me",
+    "extensionSubtitle": "extension that will close unnecessary tabs",
+    "status": "status",
+    "working": "working",
+    "notStarted": "not started",
+    "settings": "Settings",
+    "byActivityDate": "Tabs by activity date",
+    "statistics": "Statistics"
+  },
+  "tabList": {
+    "goTo": "go to",
+    "close": "close"
+  },
+  "statistics": {
+    "day": "day",
+    "days": "days",
+    "hours": "hours",
+    "howLongActive": "How long have the tabs been active",
+    "byHours": "by hours",
+    "byDays": "by days",
+    "closedTabs": "closed tabs"
+  },
+  "settings": {
+    "closeWhenMany": "Close the oldest tabs if more than",
+    "tabs": "tabs are open in total",
+    "closeWhenTime": "Close tabs that have not been active for more than",
+    "minutes": "minutes",
+    "hours": "hours",
+    "days": "days",
+    "saveClosed": "Save closed tabs",
+    "inFolder": "to a folder with a name",
+    "stop": "Stop",
+    "run": "Run"
+  }
+}

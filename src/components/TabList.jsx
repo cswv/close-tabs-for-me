@@ -1,7 +1,9 @@
-import useGetTabs from "./useGetTabs";
+import useGetTabs from "./hooks/useGetTabs";
+import { useTranslation } from "react-i18next";
 
 export default function TabList() {
   const tabs = useGetTabs();
+  const { t } = useTranslation();
 
   const closeTab = (index) => {
     chrome.tabs.remove(tabs[index].id);
@@ -34,14 +36,14 @@ export default function TabList() {
           </div>
           <button
             className="px-3 py-1 ml-auto hover:bg-slate-200 duration-200  text-sm"
-            title="перейти"
+            title={t("tabList.goTo")}
             onClick={() => chrome.tabs.update(tab.id, { active: true })}
           >
             ➔
           </button>
           <button
             className="px-3 py-1 hover:bg-slate-200 duration-200 "
-            title="закрыть"
+            title={t("tabList.close")}
             onClick={() => closeTab(index)}
           >
             ⨯
