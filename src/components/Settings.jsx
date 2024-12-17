@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export default function Settings({ isRunning, setIsRunning }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [useTime, setUseTime] = useState(false);
   const [time, setTime] = useState(1);
   const [timeMult, setTimeMult] = useState(60 * 60);
@@ -12,6 +12,7 @@ export default function Settings({ isRunning, setIsRunning }) {
   const [shouldSave, setShouldSave] = useState(false);
   const [folderName, setFolderName] = useState(t("statistics.closedTabs"));
   const [folderId, setFolderId] = useState(undefined);
+  const [err, setErr] = useState("");
 
   useEffect(() => {
     chrome.storage.sync.get(["settings"], (result) => {
@@ -30,6 +31,12 @@ export default function Settings({ isRunning, setIsRunning }) {
   }, []);
 
   const onRunClick = () => {
+    if (!useMaxTabs && !useTime) {
+      setErr(t("settings.noModeSelected"));
+      return;
+    }
+    setErr("");
+
     const settings = {
       time,
       timeMult,
@@ -122,27 +129,30 @@ export default function Settings({ isRunning, setIsRunning }) {
         </select>
       </div>
 
-      <div>
-        <label>
-          <input
-            type="checkbox"
-            className="mr-1"
-            checked={shouldSave}
-            onChange={(e) => setShouldSave(e.target.checked)}
-            disabled={isRunning}
-          />
-          {t("settings.saveClosed")}
-        </label>
-        <label className={`${shouldSave ? "block" : "hidden"} `}>
-          {t("settings.inFolder")}{" "}
-          <input
-            className="border px-2"
-            value={folderName}
-            onChange={(e) => setFolderName(e.target.value)}
-            disabled={isRunning}
-          />
-        </label>
-      </div>
+      {(useTime || useMaxTabs) && (
+        <div>
+          <label>
+            <input
+              type="checkbox"
+              className="mr-1"
+              checked={shouldSave}
+              onChange={(e) => setShouldSave(e.target.checked)}
+              disabled={isRunning}
+            />
+            {t("settings.saveClosed")}
+          </label>
+          <label className={`${shouldSave ? "block" : "hidden"} `}>
+            {t("settings.inFolder")}{" "}
+            <input
+              className="border px-2"
+              value={folderName}
+              onChange={(e) => setFolderName(e.target.value)}
+              disabled={isRunning}
+            />
+          </label>
+        </div>
+      )}
+
       {isRunning ? (
         <button
           onClick={onStopClick}
@@ -157,6 +167,11 @@ export default function Settings({ isRunning, setIsRunning }) {
         >
           {t("settings.run")}
         </button>
+      )}
+      {err.length > 0 && (
+        <p className="text-sm text-red-600 mx-auto uppercase font-medium">
+          {err}
+        </p>
       )}
     </div>
   );

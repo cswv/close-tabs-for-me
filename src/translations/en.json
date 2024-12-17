@@ -32,6 +32,7 @@
     "saveClosed": "Save closed tabs",
     "inFolder": "to a folder with a name",
     "stop": "Stop",
-    "run": "Run"
+    "run": "Run",
+    "noModeSelected": "mode is not selected"
   }
 }
