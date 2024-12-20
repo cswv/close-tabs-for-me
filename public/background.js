@@ -47,10 +47,6 @@ async function runSaveChecking({ folderId, folderName }) {
 }
 
 function runTimeChecking({ time, timeMult, folderId }) {
-  chrome.alarms.create(TIME_ALARM_NAME, {
-    delayInMinutes: 0,
-    periodInMinutes: (time * timeMult) / 60,
-  });
   const handleAlarm = (alarm) => {
     if (alarm.name === TIME_ALARM_NAME) {
       checkAllTabs({
@@ -61,6 +57,10 @@ function runTimeChecking({ time, timeMult, folderId }) {
   };
   handleAlarmListener = handleAlarm;
   chrome.alarms.onAlarm.addListener(handleAlarmListener);
+  chrome.alarms.create(TIME_ALARM_NAME, {
+    delayInMinutes: 0,
+    periodInMinutes: (time * timeMult) / 60,
+  });
 }
 
 async function runCountChecking({ folderId, maxTabs }) {
