@@ -4,6 +4,24 @@ let handleCreatedTabListener = null;
 let handleRemovedTabListener = null;
 let tabsCount = 0;
 
+chrome.storage.sync.get(["settings"], (result) => {
+  if (result && result.settings !== undefined) {
+    const { time, timeMult, folderId, useTime } = result.settings;
+    if (useTime) {
+      addAlarmHandler(time, timeMult, folderId);
+    }
+  }
+});
+
+chrome.storage.sync.onChanged.addListener((changes) => {
+  if (changes.settings) {
+    stop();
+    if (changes.settings.newValue) {
+      run(changes.settings.newValue);
+    }
+  }
+});
+
 chrome.runtime.onStartup.addListener(() => {
   chrome.storage.sync.get(["settings"], (result) => {
     if (result && result.settings !== undefined) {
@@ -12,16 +30,20 @@ chrome.runtime.onStartup.addListener(() => {
   });
 });
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "run") {
-    run(message.payload);
-    sendResponse({ status: "running" });
-  } else if (message.action === "stop") {
-    stop();
-    sendResponse({ status: "stopped" });
+function addAlarmHandler(time, timeMult, folderId) {
+  if (handleAlarmListener == null) {
+    const alarmHandler = (alarm) => {
+      if (alarm.name === TIME_ALARM_NAME) {
+        checkAllTabs({
+          time: time * 1000 * timeMult,
+          folderId,
+        });
+      }
+    };
+    handleAlarmListener = alarmHandler;
+    chrome.alarms.onAlarm.addListener(handleAlarmListener);
   }
-  return true;
-});
+}
 
 async function run(settings) {
   if (settings.shouldSave) {
@@ -47,16 +69,7 @@ async function runSaveChecking({ folderId, folderName }) {
 }
 
 function runTimeChecking({ time, timeMult, folderId }) {
-  const handleAlarm = (alarm) => {
-    if (alarm.name === TIME_ALARM_NAME) {
-      checkAllTabs({
-        time: time * 1000 * timeMult,
-        folderId,
-      });
-    }
-  };
-  handleAlarmListener = handleAlarm;
-  chrome.alarms.onAlarm.addListener(handleAlarmListener);
+  addAlarmHandler(time, timeMult, folderId);
   chrome.alarms.create(TIME_ALARM_NAME, {
     delayInMinutes: 0,
     periodInMinutes: (time * timeMult) / 60,
@@ -126,7 +139,7 @@ function checkAllTabs({ time, folderId }) {
     const sorted = tabs.sort((a, b) => a.lastAccessed - b.lastAccessed);
     while (sorted.length > 0) {
       const tab = sorted[0];
-      if (Date.now() - tab.lastAccessed >= time) {
+      if (Date.now() - tab.lastAccessed >= time && !tab.active) {
         await saveToFolder(folderId, tab.title, tab.url);
         chrome.tabs.remove(tab.id);
         sorted.shift();

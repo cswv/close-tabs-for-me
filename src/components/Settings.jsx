@@ -47,29 +47,15 @@ export default function Settings({ isRunning, setIsRunning }) {
       useMaxTabs,
       maxTabs,
     };
-    chrome.runtime.sendMessage(
-      {
-        action: "run",
-        payload: settings,
-      },
-      (response) => {
-        if (response.status === "running") {
-          chrome.storage.sync.set({
-            settings,
-          });
-          setIsRunning(true);
-        }
-      }
-    );
+    chrome.storage.sync.set({
+      settings,
+    });
+    setIsRunning(true);
   };
 
   const onStopClick = () => {
-    chrome.runtime.sendMessage({ action: "stop" }, (response) => {
-      if (response.status === "stopped") {
-        setIsRunning(false);
-        chrome.storage.sync.remove("settings");
-      }
-    });
+    setIsRunning(false);
+    chrome.storage.sync.remove("settings");
   };
 
   return (
